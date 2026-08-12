@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="glass" style="max-width:700px;margin:2rem auto;padding:2rem;">
+  <h2 class="mb-4 text-center">Admin User Management</h2>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ category }} text-center">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  
+  <h4>Add New User</h4>
+  <form method="post" class="mb-5">
+    <input type="hidden" name="form_type" value="add_user">
+    <div class="mb-3">
+      <label for="username" class="form-label">Username</label>
+      <input name="username" id="username" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="password" class="form-label">Password</label>
+      <input name="password" id="password" type="password" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="role" class="form-label">Role</label>
+      <select name="role" id="role" class="form-select" required>
+        <option value="student">Student</option>
+        <option value="teacher">Teacher</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Add User</button>
+  </form>
+
+  <h4>Reset User Password</h4>
+  <form method="post">
+    <input type="hidden" name="form_type" value="reset_password">
+    <div class="mb-3">
+      <label for="reset_username" class="form-label">Username</label>
+      <select name="reset_username" id="reset_username" class="form-select" required>
+        <option selected disabled>Select user</option>
+        {% for uname, uinfo in users.items() %}
+        <option value="{{ uname }}">{{ uname }} ({{ uinfo.role }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="new_password" class="form-label">New Password</label>
+      <input name="new_password" id="new_password" type="password" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-warning">Reset Password</button>
+  </form>
+</div>
+{% endblock %}

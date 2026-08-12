@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="glass" style="max-width:600px;margin:3rem auto;padding:2rem;">
+  <h2 class="text-center mb-4">Bulk Attendance Marking</h2>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ category }} text-center">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  <form method="post">
+    <div class="mb-3 text-center">
+      <button name="bulk_action" value="mark_all_present" class="btn btn-success mx-1">Mark All Present</button>
+      <button id="markAbsentBtn" type="button" class="btn btn-danger mx-1">Mark All Absent</button>
+    </div>
+    <div id="absentReasonSection" class="mb-3" style="display:none;">
+      <label for="absent_reason" class="form-label">Reason for Absence</label>
+      <select id="absent_reason" name="absent_reason" class="form-select" >
+        {% for r in absence_reasons %}
+        <option value="{{ r }}">{{ r }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" name="bulk_action" value="mark_all_absent" class="btn btn-danger mt-3">Confirm Mark All Absent</button>
+    </div>
+  </form>
+</div>
+<script>
+  const absentBtn = document.getElementById('markAbsentBtn');
+  const reasonSection = document.getElementById('absentReasonSection');
+
+  absentBtn.addEventListener('click', () => {
+    reasonSection.style.display = reasonSection.style.display === 'none' ? 'block' : 'none';
+  });
+</script>
+{% endblock %}

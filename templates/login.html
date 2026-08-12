@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holographic Tilt — Login V2 (A+B mix)</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+  <div class="cursor-grid">
+    <canvas id="cursor-grid-canvas"></canvas>
+  </div>
+
+  <main class="stage">
+    <div class="card theme-neon" id="card" tabindex="-1">
+
+      <!-- soft drifting aurora (from option A) -->
+      <div class="layer aurora" aria-hidden="true">
+        <span class="blob blob-a"></span>
+        <span class="blob blob-b"></span>
+        <span class="blob blob-c"></span>
+      </div>
+
+      <!-- faint neon rays, masked to edges (toned-down option B) -->
+      <div class="layer rings" aria-hidden="true"></div>
+
+      <!-- glass panel -->
+      <div class="layer panel"></div>
+
+      <!-- animated border beam -->
+      <div class="layer beam" aria-hidden="true"></div>
+
+      <!-- holographic sheen tracks cursor -->
+      <div class="layer sheen" aria-hidden="true"></div>
+
+      <!-- reveal = clipping plane -->
+      <div class="layer reveal">
+
+        <h2 class="title">
+          <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+          <span>Login</span>
+          <i class="fa-solid fa-heart heart" aria-hidden="true"></i>
+        </h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flashes">
+              {% for category, msg in messages %}
+                <div class="flash flash-{{ category }}">{{ msg }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <form class="fields" action="{{ url_for('login') }}" method="post" novalidate>
+          <div class="field">
+            <i class="fa-solid fa-user field-icon" aria-hidden="true"></i>
+            <input id="username" name="username" type="text" placeholder=" " autocomplete="username" required>
+            <label for="username">Username</label>
+          </div>
+
+          <div class="field">
+            <i class="fa-solid fa-lock field-icon" aria-hidden="true"></i>
+            <input id="password" name="password" type="password" placeholder=" " autocomplete="current-password" required>
+            <label for="password">Password</label>
+            <button type="button" class="toggle-pw" aria-label="Show password" aria-pressed="false">
+              <i class="fa-solid fa-eye" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <button type="submit" class="submit">
+            <span>Sign in</span>
+            <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i>
+          </button>
+
+          <div class="group">
+            <a href="#">Forgot password?</a>
+            <a href="#" class="accent">Sign up</a>
+          </div>
+        </form>
+
+      </div>
+
+    </div>
+  </main>
+
+  <div class="themes" role="group" aria-label="Theme">
+    <button data-theme="theme-neon"    class="active" style="--sw1:#ff2770;--sw2:#45f3ff" title="Neon"></button>
+    <button data-theme="theme-aurora"  style="--sw1:#8a5cff;--sw2:#3ad6ff" title="Aurora"></button>
+    <button data-theme="theme-sunset"  style="--sw1:#ff6a3d;--sw2:#ffd166" title="Sunset"></button>
+    <button data-theme="theme-emerald" style="--sw1:#22e3a3;--sw2:#7dff9b" title="Emerald"></button>
+    <button data-theme="theme-royal"   style="--sw1:#c9a227;--sw2:#9b5cff" title="Royal Gold"></button>
+    <button data-theme="theme-mono"    style="--sw1:#e8e8ef;--sw2:#9aa3b2" title="Platinum"></button>
+  </div>
+
+  <script>
+    const card = document.getElementById('card');
+    const MAX = 6;                        // gentler tilt
+    let raf = null;
+
+    function onMove(e) {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top) / r.height;
+      const ry = (px - 0.5) * 2 * MAX;
+      const rx = (0.5 - py) * 2 * MAX;
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        card.style.setProperty('--rx', rx.toFixed(2) + 'deg');
+        card.style.setProperty('--ry', ry.toFixed(2) + 'deg');
+        card.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+        card.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+      });
+    }
+    function reset() {
+      card.style.setProperty('--rx', '0deg');
+      card.style.setProperty('--ry', '0deg');
+      card.style.setProperty('--mx', '50%');
+      card.style.setProperty('--my', '50%');
+    }
+    if (window.matchMedia('(pointer: fine)').matches) {
+      card.addEventListener('pointermove', onMove);
+      card.addEventListener('pointerleave', reset);
+    }
+    reset();
+
+    const themeBtns = document.querySelectorAll('.themes button');
+    themeBtns.forEach(b => b.addEventListener('click', () => {
+      card.className = 'card ' + b.dataset.theme;
+      themeBtns.forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+    }));
+
+    const btn = document.querySelector('.toggle-pw');
+    const pw = document.getElementById('password');
+    btn.addEventListener('click', () => {
+      const show = pw.type === 'password';
+      pw.type = show ? 'text' : 'password';
+      btn.setAttribute('aria-pressed', String(show));
+      btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+      btn.querySelector('i').className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+    });
+
+    /* Cursor grid effect */
+    const gridCanvas = document.getElementById('cursor-grid-canvas');
+    const gridCtx = gridCanvas.getContext('2d');
+    const config = {
+      cellSize: 70,
+      color: '#D946EF',
+      radius: 140,
+      falloff: 'smooth',
+      holdTime: 400,
+      fadeDuration: 800,
+      lineWidth: 1.2,
+      maxOpacity: 1,
+      fillOpacity: 0,
+      gridOpacity: 0,
+      cellRadius: 0,
+      clickPulse: true,
+      pulseSpeed: 600
+    };
+
+    const falloffCurves = {
+      linear: t => t,
+      smooth: t => t * t * (3 - 2 * t),
+      sharp: t => t * t * t
+    };
+
+    const hexToRgb = hex => {
+      const h = hex.replace('#', '');
+      const v = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+      const num = parseInt(v.slice(0, 6), 16);
+      return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+    };
+
+    let cols = 0;
+    let rows = 0;
+    let offX = 0;
+    let offY = 0;
+    let alphas = new Float32Array(0);
+    let touched = new Float64Array(0);
+    const pulses = [];
+    let rafId = 0;
+    let running = false;
+    let lastFrame = 0;
+
+    const rebuildGrid = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = gridCanvas.clientWidth;
+      const h = gridCanvas.clientHeight;
+      gridCanvas.width = Math.max(1, Math.round(w * dpr));
+      gridCanvas.height = Math.max(1, Math.round(h * dpr));
+      gridCanvas.style.width = `${w}px`;
+      gridCanvas.style.height = `${h}px`;
+      gridCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cols = Math.ceil(w / config.cellSize) + 1;
+      rows = Math.ceil(h / config.cellSize) + 1;
+      offX = (w - cols * config.cellSize) / 2;
+      offY = (h - rows * config.cellSize) / 2;
+      alphas = new Float32Array(cols * rows);
+      touched = new Float64Array(cols * rows);
+    };
+
+    const cellCenter = i => {
+      const cx = offX + (i % cols) * config.cellSize + config.cellSize / 2;
+      const cy = offY + Math.floor(i / cols) * config.cellSize + config.cellSize / 2;
+      return [cx, cy];
+    };
+
+    const energize = (x, y, boost = 1) => {
+      const r = Math.max(config.radius, 1);
+      const ease = falloffCurves[config.falloff] ?? falloffCurves.linear;
+      const now = performance.now();
+      const minCol = Math.max(0, Math.floor((x - r - offX) / config.cellSize));
+      const maxCol = Math.min(cols - 1, Math.floor((x + r - offX) / config.cellSize));
+      const minRow = Math.max(0, Math.floor((y - r - offY) / config.cellSize));
+      const maxRow = Math.min(rows - 1, Math.floor((y + r - offY) / config.cellSize));
+      for (let rIdx = minRow; rIdx <= maxRow; rIdx++) {
+        for (let cIdx = minCol; cIdx <= maxCol; cIdx++) {
+          const i = rIdx * cols + cIdx;
+          const [cx, cy] = cellCenter(i);
+          const dist = Math.hypot(cx - x, cy - y);
+          if (dist > r) continue;
+          const level = ease(1 - dist / r) * config.maxOpacity * boost;
+          if (level > alphas[i]) {
+            alphas[i] = level;
+            touched[i] = now;
+          } else if (level > 0) {
+            touched[i] = now;
+          }
+        }
+      }
+    };
+
+    const drawGrid = now => {
+      const dt = Math.min(now - lastFrame, 50);
+      lastFrame = now;
+      const w = gridCanvas.clientWidth;
+      const h = gridCanvas.clientHeight;
+      gridCtx.clearRect(0, 0, w, h);
+      const [cr, cg, cb] = hexToRgb(config.color);
+      if (config.gridOpacity > 0) {
+        gridCtx.strokeStyle = `rgba(${cr}, ${cg}, ${cb}, ${config.gridOpacity})`;
+        gridCtx.lineWidth = 1;
+        gridCtx.beginPath();
+        for (let c = 0; c <= cols; c++) {
+          const x = Math.round(offX + c * config.cellSize) + 0.5;
+          gridCtx.moveTo(x, 0);
+          gridCtx.lineTo(x, h);
+        }
+        for (let rIdx = 0; rIdx <= rows; rIdx++) {
+          const y = Math.round(offY + rIdx * config.cellSize) + 0.5;
+          gridCtx.moveTo(0, y);
+          gridCtx.lineTo(w, y);
+        }
+        gridCtx.stroke();
+      }
+
+      for (let pi = pulses.length - 1; pi >= 0; pi--) {
+        const pulse = pulses[pi];
+        const age = (now - pulse.t0) / 1000;
+        const ringR = age * config.pulseSpeed;
+        if (ringR > Math.hypot(w, h)) {
+          pulses.splice(pi, 1);
+          continue;
+        }
+        const band = config.cellSize;
+        const minCol = Math.max(0, Math.floor((pulse.x - ringR - band - offX) / config.cellSize));
+        const maxCol = Math.min(cols - 1, Math.floor((pulse.x + ringR + band - offX) / config.cellSize));
+        const minRow = Math.max(0, Math.floor((pulse.y - ringR - band - offY) / config.cellSize));
+        const maxRow = Math.min(rows - 1, Math.floor((pulse.y + ringR + band - offY) / config.cellSize));
+        for (let rIdx = minRow; rIdx <= maxRow; rIdx++) {
+          for (let cIdx = minCol; cIdx <= maxRow; cIdx++) {
+            const i = rIdx * cols + cIdx;
+            const [cx, cy] = cellCenter(i);
+            const dist = Math.hypot(cx - pulse.x, cy - pulse.y);
+            if (Math.abs(dist - ringR) < band / 2 && config.maxOpacity > alphas[i]) {
+              alphas[i] = config.maxOpacity;
+              touched[i] = now;
+            }
+          }
+        }
+      }
+
+      let anyVisible = pulses.length > 0;
+      const fadeStep = dt / Math.max(config.fadeDuration, 16);
+      const half = config.cellSize / 2;
+
+      for (let i = 0; i < alphas.length; i++) {
+        let a = alphas[i];
+        if (a <= 0) continue;
+        if (now - touched[i] > config.holdTime) {
+          a = Math.max(0, a - fadeStep);
+          alphas[i] = a;
+          if (a <= 0) continue;
+        }
+        anyVisible = true;
+        const [cx, cy] = cellCenter(i);
+        const gradient = gridCtx.createRadialGradient(cx, cy, half * 0.1, cx, cy, config.cellSize);
+        gradient.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, ${a})`);
+        gradient.addColorStop(1, `rgba(${cr}, ${cg}, ${cb}, 0)`);
+        const x = cx - half + 0.5;
+        const y = cy - half + 0.5;
+        const s = config.cellSize - 1;
+        gridCtx.beginPath();
+        if (gridCtx.roundRect) {
+          gridCtx.roundRect(x, y, s, s, config.cellRadius);
+        } else {
+          gridCtx.rect(x, y, s, s);
+        }
+        if (config.fillOpacity > 0) {
+          gridCtx.fillStyle = `rgba(${cr}, ${cg}, ${cb}, ${a * config.fillOpacity})`;
+          gridCtx.fill();
+        }
+        gridCtx.strokeStyle = gradient;
+        gridCtx.lineWidth = config.lineWidth;
+        gridCtx.stroke();
+      }
+
+      if (anyVisible) {
+        rafId = requestAnimationFrame(drawGrid);
+      } else {
+        running = false;
+        if (config.gridOpacity <= 0) gridCtx.clearRect(0, 0, w, h);
+      }
+    };
+
+    const wakeGrid = () => {
+      if (running) return;
+      running = true;
+      lastFrame = performance.now();
+      rafId = requestAnimationFrame(drawGrid);
+    };
+
+    const toLocal = e => {
+      const rect = gridCanvas.getBoundingClientRect();
+      return [e.clientX - rect.left, e.clientY - rect.top];
+    };
+
+    const onPointerMoveGrid = e => {
+      const [x, y] = toLocal(e);
+      energize(x, y);
+      wakeGrid();
+    };
+
+    const onPointerDownGrid = e => {
+      if (!config.clickPulse) return;
+      const [x, y] = toLocal(e);
+      pulses.push({ x, y, t0: performance.now() });
+      wakeGrid();
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      rebuildGrid();
+      wakeGrid();
+    });
+    resizeObserver.observe(gridCanvas.parentElement);
+
+    const handlePointer = () => {
+      rebuildGrid();
+      wakeGrid();
+    };
+
+    window.addEventListener('resize', handlePointer);
+        document.addEventListener('pointermove', onPointerMoveGrid);
+        document.addEventListener('pointerdown', onPointerDownGrid);
+        rebuildGrid();
+        wakeGrid();
+      </script>
+</body>
+</html>

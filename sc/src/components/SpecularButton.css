@@ -1,0 +1,122 @@
+.specular-button,
+button.btn:not(.btn-link),
+a.btn:not(.btn-link),
+.btn:not(.btn-link) {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.85rem 1.75rem;
+  border-radius: 18px;
+  color: #f8fafc;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 24px 70px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  text-decoration: none !important;
+  cursor: pointer;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.24s ease,
+    background-color 0.24s ease;
+  overflow: hidden;
+}
+
+button:not(.btn-link):hover,
+a.btn:not(.btn-link):hover,
+.btn:not(.btn-link):hover,
+.specular-button:hover {
+  transform: translateY(-1px);
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+button:not(.btn-link):active,
+a.btn:not(.btn-link):active,
+.btn:not(.btn-link):active,
+.specular-button:active {
+  transform: scale(0.985);
+}
+
+button:not(.btn-link)::before,
+a.btn:not(.btn-link)::before,
+.btn:not(.btn-link)::before,
+.specular-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.28),
+    transparent 32%
+  );
+  opacity: 0.32;
+  transition: opacity 0.28s ease;
+}
+
+button:not(.btn-link)::after,
+a.btn:not(.btn-link)::after,
+.btn:not(.btn-link)::after,
+.specular-button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.18) 50%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  opacity: 0.22;
+  transform: translateX(-105%);
+  animation: specular-shine 1.4s linear infinite;
+}
+
+button:not(.btn-link):hover::after,
+a.btn:not(.btn-link):hover::after,
+.btn:not(.btn-link):hover::after,
+.specular-button:hover::after {
+  opacity: 0.34;
+}
+
+button.btn:not(.btn-link):disabled,
+a.btn:not(.btn-link):disabled,
+.btn:not(.btn-link):disabled,
+.btn.disabled,
+button.btn:disabled,
+.specular-button:disabled {
+  opacity: 0.56 !important;
+  cursor: not-allowed;
+}
+
+@keyframes specular-shine {
+  from {
+    transform: translateX(-105%) rotate(0deg);
+  }
+  to {
+    transform: translateX(105%) rotate(0deg);
+  }
+}
+
+.specular-button--secondary {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.specular-button--danger {
+  background-color: rgba(255, 90, 95, 0.16);
+  border-color: rgba(255, 90, 95, 0.26);
+}
+
+.specular-button--ghost {
+  background-color: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.08);
+}

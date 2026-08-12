@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="centered-flex">
+  <div class="main-card w-100">
+    <h2 class="mb-4">Important Questions — Select Subject</h2>
+    <ul class="tt-link-list fs-4">
+      {% for subject, suburl in subjects %}
+        <li class="mb-2">
+          <a href="{{ url_for('important_questions_subject', subject=suburl) }}">{{ loop.index }}. {{ subject }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

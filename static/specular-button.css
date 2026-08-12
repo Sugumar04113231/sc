@@ -1,0 +1,99 @@
+:root {
+  --sb-radius: 18px;
+  --sb-tint: #ffffff;
+  --sb-tint-opacity: 0.06;
+  --sb-blur: 12px;
+  --sb-text-color: #f5f5f5;
+  --sb-line-color: #ffffff;
+  --sb-base-color: #525252;
+  --sb-intensity: 1;
+  --sb-shine-size: 10deg;
+  --sb-shine-fade: 40deg;
+  --sb-thickness: 1px;
+  --sb-speed: 0.35s;
+  --sb-proximity: 250px;
+}
+
+button:not(.btn-link),
+a.btn:not(.btn-link),
+.btn:not(.btn-link) {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.85rem 1.75rem;
+  border-radius: var(--sb-radius);
+  color: var(--sb-text-color) !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 18px 35px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(var(--sb-blur));
+  -webkit-backdrop-filter: blur(var(--sb-blur));
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  overflow: hidden;
+}
+
+button:not(.btn-link):hover,
+a.btn:not(.btn-link):hover,
+.btn:not(.btn-link):hover {
+  transform: translateY(-1px);
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+button:not(.btn-link):active,
+a.btn:not(.btn-link):active,
+.btn:not(.btn-link):active {
+  transform: scale(0.98);
+}
+
+button:not(.btn-link)::before,
+a.btn:not(.btn-link)::before,
+.btn:not(.btn-link)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.35), transparent 30%);
+  opacity: 0.25;
+  transition: opacity 0.3s ease;
+}
+
+button:not(.btn-link)::after,
+a.btn:not(.btn-link)::after,
+.btn:not(.btn-link)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: linear-gradient(135deg, rgba(255,255,255,0) 30%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0) 70%);
+  opacity: 0.22;
+  transform: translateX(-100%);
+  animation: specular-shine var(--sb-speed) linear infinite;
+}
+
+button:not(.btn-link):hover::after,
+a.btn:not(.btn-link):hover::after,
+.btn:not(.btn-link):hover::after {
+  opacity: 0.35;
+}
+
+button:not(.btn-link):disabled,
+a.btn:not(.btn-link):disabled,
+.btn:not(.btn-link):disabled,
+.btn.disabled,
+button:disabled {
+  opacity: 0.55 !important;
+  cursor: default;
+}
+
+@keyframes specular-shine {
+  from { transform: translateX(-100%) rotate(0deg); }
+  to { transform: translateX(100%) rotate(0deg); }
+}

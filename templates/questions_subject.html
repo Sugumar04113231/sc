@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1>Important Questions for {{ subject }}</h1>
+{% if questions %}
+<ul>
+    {% for q in questions %}
+        <li>{{ q }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No questions available yet for this subject.</p>
+{% endif %}
+<p><a href="{{ url_for('important_questions') }}">Back to Subjects</a></p>
+{% endblock %}

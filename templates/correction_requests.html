@@ -1,0 +1,99 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="glass" style="max-width:800px; margin:2rem auto; padding:2rem;">
+  <h2 class="mb-4 text-center">{% if role == 'student' %}My Correction Requests{% else %}Attendance Correction Requests{% endif %}</h2>
+  
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ category }} text-center">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% if role == 'student' %}
+  <form method="post" enctype="multipart/form-data" class="mb-4">
+    <div class="mb-3">
+      <label for="date" class="form-label">Date of Attendance</label>
+      <input type="date" name="date" class="form-control" id="date" required>
+    </div>
+    <div class="mb-3">
+      <label for="requested_status" class="form-label">Change to Status</label>
+      <select name="requested_status" class="form-select" id="requested_status" required>
+        <option value="" disabled selected>Select status</option>
+        <option value="Present">Present</option>
+        <option value="Absent">Absent</option>
+        <option value="Late">Late</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="reason" class="form-label">Reason (if changing to Absent)</label>
+      <input type="text" name="reason" class="form-control" id="reason">
+    </div>
+    <div class="mb-3">
+      <label for="comments" class="form-label">Comments</label>
+      <textarea name="comments" class="form-control" id="comments" rows="3"></textarea>
+    </div>
+    <div class="mb-3">
+      <label for="evidence" class="form-label">Evidence (optional, PDF or Image)</label>
+      <input type="file" name="evidence" class="form-control" id="evidence" accept=".pdf,.jpg,.jpeg,.png">
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Correction Request</button>
+  </form>
+  {% else %}
+  <table class="table table-striped table-dark align-middle">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Student</th>
+        <th>Date</th>
+        <th>Requested Status</th>
+        <th>Reason</th>
+        <th>Comments</th>
+        <th>Evidence</th>
+        <th>Status</th>
+        <th>Admin Comments</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if requests %}
+      {% for req in requests %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ req.student }}</td>
+        <td>{{ req.date }}</td>
+        <td>{{ req.requested_status }}</td>
+        <td>{{ req.reason or '-' }}</td>
+        <td>{{ req.comments or '-' }}</td>
+        <td>
+          {% if req.evidence %}
+          <a href="{{ url_for('view_evidence', date='correction', student=req.student) }}" target="_blank" class="btn btn-link btn-sm">View</a>
+          {% else %}
+          -
+          {% endif %}
+        </td>
+        <td>{{ req.status }}</td>
+        <td>{{ req.response_comments or '-' }}</td>
+        <td>
+          {% if req.status == 'Pending' %}
+          <form method="post" class="d-flex flex-column">
+            <input type="hidden" name="request_index" value="{{ loop.index0 }}">
+            <textarea name="response_comments" placeholder="Comments" class="form-control mb-1" rows="2"></textarea>
+            <button type="submit" name="action" value="approve" class="btn btn-success btn-sm mb-1">Approve</button>
+            <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm">Reject</button>
+          </form>
+          {% else %}
+          -
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      {% else %}
+      <tr><td colspan="10" class="text-center">No correction requests found.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% endblock %}

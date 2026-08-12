@@ -1,0 +1,125 @@
+{% extends "layout.html" %}
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, msg in messages %}
+      <div class="alert alert-{{ category }} text-center" style="z-index:10;">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+<style>
+.table, .table th, .table td, .table thead th, .table tbody td, .table-striped > tbody > tr:nth-of-type(odd),
+.table-striped > tbody > tr, .table-hover > tbody > tr:hover, 
+.table > :not(caption) > * > * {
+  background: transparent !important;
+  border: none !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.glass {
+  box-shadow: none !important;
+  background: rgba(25, 29, 45, 0.80) !important;
+}
+</style>
+<div class="centered-flex" style="min-height: 80vh;">
+  <div class="glass w-100" style="padding: 2.5rem 0;">
+    <h2 class="mb-4 text-center">Mark Attendance ({{ date }})</h2>
+
+    {% if role == 'teacher' %}
+    <!-- QR Scan Form for teachers -->
+    <form method="post" class="mb-4 d-flex justify-content-center align-items-center" autocomplete="off" enctype="multipart/form-data">
+      <input type="text" name="qr_student" class="form-control w-auto me-2" placeholder="Paste student QR value here" autocomplete="off"/>
+      <button type="submit" class="btn btn-success">Mark Present from QR</button>
+      <span class="text-muted small ms-3">Scan a student's QR, paste value, submit to mark present.</span>
+    </form>
+    {% endif %}
+
+    <div class="table-responsive">
+      <table class="table align-middle" style="background: transparent !important; border: none !important;">
+        <thead>
+          <tr style="background: rgba(36,40,60,0.48) !important">
+            <th>S.No</th>
+            <th>Student Name</th>
+            <th>Status</th>
+            <th>Action</th>
+            <th>Marked At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in student_names %}
+          {% set data = attendance_status.get(student, {}) %}
+          {% set status = data.get("status", "Not marked") %}
+          {% set marked_at = data.get("timestamp", "-") %}
+          {% set reason = data.get("reason") %}
+          {% set evidence = data.get("evidence") %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ student }}</td>
+            <td>
+              {% if status == 'Present' %}
+                <span class="badge bg-success">{{ status }}</span>
+              {% elif status == 'Absent' %}
+                <span class="badge bg-danger">{{ status }}</span>
+                {% if reason %}
+                  <div class="small text-warning mt-1">Reason: {{ reason }}</div>
+                {% endif %}
+                {% if evidence %}
+                  <div><a href="{{ url_for('view_evidence', date=date, student=student) }}" class="btn btn-link btn-sm" target="_blank">View Evidence</a></div>
+                {% endif %}
+              {% elif status == 'Late' %}
+                <span class="badge bg-warning text-dark">{{ status }}</span>
+              {% else %}
+                <span class="badge bg-secondary">Not marked</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if status == 'Not marked' %}
+              <form method="post" enctype="multipart/form-data" style="display:inline-block;width:100%;" autocomplete="off">
+                <input type="hidden" name="student" value="{{ student }}">
+                <select name="status" class="form-select form-select-sm att-status-select" required>
+                  <option value="" disabled selected>Select</option>
+                  <option value="Present">Present</option>
+                  <option value="Absent">Absent</option>
+                  <option value="Late">Late</option>
+                </select>
+                <div class="att-absent-extra" style="display:none;">
+                  <label for="reason-{{ loop.index }}" class="small mb-1 mt-1">Reason for Absence:</label>
+                    <select name="reason" id="reason-{{ loop.index }}" class="form-select form-select-sm mb-1" required>
+                      <option value="" disabled selected>Choose reason</option>
+                      {% for r in absence_reasons %}
+                      <option value="{{ r }}">{{ r }}</option>
+                      {% endfor %}
+                    </select>
+                  <label class="small mb-1">Evidence File (optional):</label>
+                  <input type="file" name="evidence" accept=".pdf,.jpg,.jpeg,.png" class="form-control form-control-sm mb-1">
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm mt-1">Save</button>
+              </form>
+              {% else %}
+              <span class="text-muted small">-</span>
+              {% endif %}
+            </td>
+            <td>{{ marked_at }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+  // Show reason/evidence fields when "Absent" is selected
+  document.querySelectorAll('.att-status-select').forEach(function(sel){
+    sel.addEventListener('change', function(){
+      var absentExtra = this.closest('form').querySelector('.att-absent-extra');
+      if(this.value === "Absent") {
+        absentExtra.style.display = '';
+        absentExtra.querySelector('select[name=reason]').required = true;
+      } else {
+        absentExtra.style.display = 'none';
+        absentExtra.querySelector('select[name=reason]').required = false;
+      }
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="glass" style="max-width:900px;margin:2rem auto; padding:2rem;">
+  <h2 class="text-center mb-3">{{ student }}'s Attendance Dashboard</h2>
+  <p class="text-center mb-3">
+    Total Days: {{ total_days }} | Present: {{ present_days }} | Absent: {{ absent_days }} | Late: {{ late_days }}<br>
+    Attendance Percentage: <strong>{{ attendance_percent }}%</strong>
+  </p>
+  <canvas id="studentAttendanceChart" height="120"></canvas>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+  const ctx = document.getElementById('studentAttendanceChart').getContext('2d');
+  const dates = {{ attendance_history | map(attribute='date') | list | tojson }};
+  const statuses = {{ attendance_history | map(attribute='status') | list | tojson }};
+  const dataValues = statuses.map(s => {
+    if (s === "Present") return 2;
+    if (s === "Late") return 1;
+    if (s === "Absent") return 0;
+    return -1;
+  });
+  const backgroundColors = dataValues.map(v => {
+    if (v === 2) return 'rgba(40, 167, 69, 0.6)';
+    if (v === 1) return 'rgba(255, 193, 7, 0.6)';
+    if (v === 0) return 'rgba(220, 53, 69, 0.6)';
+    return 'rgba(108, 117, 125, 0.3)';
+  });
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: dates,
+      datasets: [{
+        label: 'Attendance',
+        data: dataValues,
+        backgroundColor: backgroundColors,
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          min: -1,
+          max: 2,
+          ticks: {
+            stepSize: 1,
+            callback: function(value) {
+              if (value === 2) return 'Present';
+              if (value === 1) return 'Late';
+              if (value === 0) return 'Absent';
+              if (value === -1) return 'Not Marked';
+              return value;
+            }
+          }
+        }
+      },
+      plugins: {
+        legend: {display: false},
+        title: {
+          display: true,
+          text: 'Daily Attendance Status',
+          font: {size: 16}
+        }
+      }
+    }
+  });
+  </script>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance PDF</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 32px; }
+        h1 { text-align: center; }
+        table { border-collapse: collapse; margin: 35px auto 0 auto; width: 90%; }
+        th, td { border: 1px solid #444; padding: 11px 10px; font-size: 1.1em; }
+        th { background: #f4f4f4; }
+        .datetime { text-align: right; font-size: 1.1em; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Attendance Log</h1>
+    <div class="datetime"><strong>Date &amp; Time:</strong> {{ date_time }}</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Sl.No</th>
+                <th>Student</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for idx, (student, status) in enumerate(attendance_status.items(), start=1) %}
+            <tr>
+                <td>{{ idx }}</td>
+                <td>{{ student }}</td>
+                <td>{{ status }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3">No attendance marked yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

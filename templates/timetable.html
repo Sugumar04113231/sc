@@ -1,0 +1,8 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="glass" style="max-width:900px;margin:2rem auto; padding:2rem; text-align:center;">
+  <h2 class="mb-4 text-center">Timetable</h2>
+  <img src="{{ url_for('static', filename='timetable.jpg') }}" alt="Class Timetable" class="img-fluid rounded shadow" style="max-width:100%;height:auto;">
+  <p class="mt-3 text-muted">If the image looks too small, open in a new tab for full view.</p>
+</div>
+{% endblock %}

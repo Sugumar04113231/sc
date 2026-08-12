@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="centered-flex">
+  <div class="main-card w-100">
+    <h2 class="mb-4">{{ subject }} — Important Questions</h2>
+    {% if questions and questions|length > 0 %}
+      <ol class="fs-5">
+        {% for q in questions %}
+          <li class="mb-3">{{ q }}</li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <div class="alert alert-info">No questions available yet for this subject.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

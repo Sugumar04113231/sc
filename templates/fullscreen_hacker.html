@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Hacker Lively Screen</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      width: 100vw; height: 100vh; overflow: hidden;
+      background: #000;
+    }
+    .fullscreen-bg {
+      position: fixed; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      overflow: hidden;
+    }
+    .lively-img {
+      position: absolute;
+      top: 50%; left: 50%;
+      min-width: 100vw; min-height: 100vh;
+      max-width: none; max-height: none;
+      transform: translate(-50%, -50%);
+      will-change: transform;
+      transition: box-shadow 0.25s;
+      box-shadow: 0 0 60px 16px #2000a033, 0 0 120px 80px #9000ff19;
+      user-select: none;
+      pointer-events: none;
+    }
+    .back-btn {
+      position: absolute; top: 24px; left: 24px;
+      font-size: 1.2em; background: #fff4; color: #111;
+      border-radius: 8px; padding: 4px 16px;
+      text-decoration: none; font-weight: bold; z-index: 9;
+      box-shadow: 0 1px 8px #0004;
+    }
+    @media (max-width: 600px) {
+      .back-btn { font-size: .98em; top: 10px; left: 10px; padding: 2px 10px;}
+    }
+  </style>
+</head>
+<body>
+  <a class="back-btn" href="{{ url_for('login') }}">&larr; Back to Login</a>
+  <div class="fullscreen-bg">
+    <img src="{{ url_for('static', filename='1000141446.jpg') }}" alt="Lively Hacker" class="lively-img" id="hacker-img">
+  </div>
+  <script>
+    // Lively parallax movement
+    const img = document.getElementById('hacker-img');
+    window.addEventListener('mousemove', function(ev) {
+      let x = (ev.clientX / window.innerWidth - 0.5) * 36; // adjust 36 for intensity
+      let y = (ev.clientY / window.innerHeight - 0.5) * 28;
+      img.style.transform = translate(-50%, -50%) scale(1.03) translate(${x}px, ${y}px);
+    });
+    window.addEventListener('touchmove', function(ev) {
+      if(ev.touches && ev.touches[0]) {
+        let x = (ev.touches.clientX / window.innerWidth - 0.5) * 36;
+        let y = (ev.touches.clientY / window.innerHeight - 0.5) * 28;
+        img.style.transform = translate(-50%, -50%) scale(1.05) translate(${x}px, ${y}px);
+      }
+    });
+    window.addEventListener('mouseleave', function() {
+      img.style.transform = 'translate(-50%, -50%) scale(1)';
+    });
+  </script>
+</body>
+</html>

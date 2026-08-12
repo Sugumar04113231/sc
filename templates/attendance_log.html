@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, msg in messages %}
+      <div class="alert alert-{{ category }} text-center" style="z-index:10;">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+<style>
+.table, .table th, .table td, .table thead th, .table tbody td, .table-striped > tbody > tr:nth-of-type(odd),
+.table-striped > tbody > tr, .table-hover > tbody > tr:hover, 
+.table > :not(caption) > * > * {
+  background: transparent !important;
+  border: none !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.glass {
+  box-shadow: none !important;
+  background: rgba(25, 29, 45, 0.80) !important;
+}
+</style>
+<div class="centered-flex" style="min-height: 80vh;">
+  <div class="glass w-100" style="padding: 2.5rem 0;">
+    <h2 class="mb-2 text-center">Attendance Log</h2>
+    <form method="get" class="text-center mb-3">
+      <input type="date" name="date" value="{{ view_date }}" class="form-control d-inline-block w-auto">
+      <button type="submit" class="btn btn-secondary ms-2">View</button>
+      {% if log_dates|length > 1 %}
+        <select onchange="location = '?date=' + this.value;" class="form-select d-inline-block w-auto ms-2">
+          {% for d in log_dates %}
+          <option value="{{ d }}" {% if d == view_date %}selected{% endif %}>{{ d }}</option>
+          {% endfor %}
+        </select>
+      {% endif %}
+      {% if role == "teacher" %}
+      <a href="{{ url_for('attendance_log_pdf', date=view_date) }}" class="btn btn-success btn-lg ms-2" target="_blank">
+        <i class="fa fa-download"></i> Download as PDF
+      </a>
+      {% endif %}
+    </form>
+    {% if alerts is defined and alerts %}
+      <div class="alert alert-warning text-center" style="z-index:10;">
+        {% for alert in alerts %}
+          <div>{{ alert }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    <div class="table-responsive">
+      <table class="table align-middle" style="background: transparent !important; border: none !important;">
+        <thead>
+          <tr style="background: rgba(36,40,60,0.48) !important">
+            <th>S.No</th>
+            <th>Student Name</th>
+            <th>Status</th>
+            <th>Reason</th>
+            <th>Evidence</th>
+            <th>Marked At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in student_names %}
+          {% set data = attendance_status.get(student, {}) %}
+          {% set status = data.get("status", "Not marked") %}
+          {% set marked_at = data.get("timestamp", "-") %}
+          {% set reason = data.get("reason") %}
+          {% set evidence = data.get("evidence") %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ student }}</td>
+            <td>
+              {% if status == 'Present' %}
+                <span class="badge bg-success">{{ status }}</span>
+              {% elif status == 'Absent' %}
+                <span class="badge bg-danger">{{ status }}</span>
+              {% elif status == 'Late' %}
+                <span class="badge bg-warning text-dark">{{ status }}</span>
+              {% else %}
+                <span class="badge bg-secondary">Not marked</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if status == 'Absent' and reason %}
+                <span class="badge bg-warning text-dark">{{ reason }}</span>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if status == 'Absent' and evidence %}
+                <a href="{{ url_for('view_evidence', date=view_date, student=student) }}" class="btn btn-link btn-sm" target="_blank">View</a>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td>{{ marked_at }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

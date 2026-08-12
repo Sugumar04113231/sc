@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="video-bg-container">
+    <video autoplay muted loop playsinline id="bgVideo">
+        <source src="{{ url_for('static', filename='vegeta-ultra-ego.3840x2160.mp4') }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <div class="floating-panel">
+        <h1>Important Questions — Select Subject</h1>
+        <ul style="margin:0 auto; max-width:330px; text-align: left; font-size:1.15em; font-weight:bold;">
+            {% for subject, url_name in subjects %}
+            <li style="margin-bottom:16px;">
+                <a class="panel-link" style="padding:7px 23px;font-size:1em;" href="{{ url_for('important_questions_subject', subject=url_name) }}">{{ loop.index }}. {{ subject }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

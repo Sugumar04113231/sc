@@ -1,0 +1,175 @@
+#bg-gradient {
+  position: fixed;
+  top:0; left:0; width:100vw; height:100vh; z-index:0;
+  background: linear-gradient(120deg, #23243b 0%, #3d2a63 35%, #111a2d 65%, #45f3ff11 98%);
+  opacity: 1;
+  pointer-events: none;
+  animation: gradientmove 24s ease-in-out infinite alternate;
+  filter: blur(0.5px) brightness(1.12);
+}
+#arrow-bg {
+  position: fixed;
+  top:0; left:0; width:100vw; height:100vh; z-index:1;
+  pointer-events: none;
+  background: transparent !important;
+}
+@keyframes gradientmove {
+  0% {
+    background: linear-gradient(120deg, #23243b 0%, #3d2a63 35%, #111a2d 65%, #45f3ff11 98%);
+  }
+  45% {
+    background: linear-gradient(128deg, #222643 0%, #262962 32%, #3b1926 55%, #45f3ff33 100%);
+  }
+  75% {
+    background: linear-gradient(108deg, #181e36 0%, #292077 40%, #2d232a 70%, #ff277044 100%);
+  }
+  100% {
+    background: linear-gradient(120deg, #23243b 0%, #3d2a63 40%, #111a2d 82%, #45f3ff22 100%);
+  }
+}
+
+.main-login-flex {
+  display: flex;
+  flex-direction: row;
+  gap: 42px;
+  align-items: center;
+  justify-content: center;
+}
+.hacker-logo-side {
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  max-width: 220px;
+  min-height: 320px;
+}
+.hacker-logo-img {
+  max-width: 130px;
+  width: 100%;
+  height: auto;
+  opacity: 0.79;
+  filter: drop-shadow(0 0 40px #222b9a) grayscale(0.2) brightness(1.11);
+  border-radius: 19px;
+  background: transparent;
+}
+
+.mirror-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position:relative;
+  z-index:2;
+}
+.glass.glow-wrapper {
+  max-width: 430px;
+  width: 97vw;
+  background: rgba(28, 20, 57, 0.93);
+  border-radius: 19px;
+  box-shadow: 0 0 22px 3px #4fc3f7, 0 0 16px 1px #ff2770, 0 0 0 8px #181823df;
+  border: 2px solid #4fc3f7;
+  position: relative;
+  padding: 44px 32px 27px 32px;
+  margin-bottom: 0;
+  z-index: 2;
+}
+.glow-wrapper::before,
+.glow-wrapper::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  border-radius: 18px;
+  transition: 0.24s;
+}
+.glow-wrapper::before {
+  top: -8px; left: -8px; right: -8px; bottom: -8px;
+  border: 2.5px solid #45f3ff;
+  filter: blur(2px);
+  animation: glowing-corners 2.7s linear infinite;
+}
+.glow-wrapper::after {
+  top: -8px; left: -8px; right: -8px; bottom: -8px;
+  border: 2.5px solid #ff2770;
+  filter: blur(2.5px);
+  animation: glowing-corners 4.5s linear reverse infinite;
+}
+@keyframes glowing-corners {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; box-shadow: 0 0 28px 13px #45f3ff88, 0 0 30px 16px #ff277077; }
+  100% { opacity: 0.7; }
+}
+.login-title {
+  font-size: 2.13em;
+  font-weight: 700;
+  margin-bottom: 34px;
+  color: #fff;
+  letter-spacing: .03em;
+  text-shadow: 0 0 20px #ff2770b9, 0 0 14px #45f3ff71;
+}
+.glow-input {
+  background: rgba(44,56,100,0.78);
+  border: 2px solid #4fc3f7;
+  color: #fff;
+  box-shadow: 0 0 6px 1px #4fc3f7a0;
+  border-radius: 14px;
+  font-size: 1.15em;
+  padding: 13px 19px;
+  transition: box-shadow 0.17s, border-color 0.17s;
+}
+.glow-input:focus {
+  box-shadow: 0 0 14px 5px #45f3ffad, 0 0 10px 5px #ff2770b2;
+  border-color: #ff2770;
+  outline: none;
+}
+.glow-btn {
+  background: linear-gradient(90deg, #45f3ff 40%, #ff2770 100%);
+  color: #181823;
+  font-size: 1.18em;
+  font-weight: 700;
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 0 16px 4px #45f3ff88, 0 0 11px 7px #ff277099;
+  padding: 13px 0;
+  margin-top: 8px;
+  transition: box-shadow 0.19s, filter 0.16s;
+}
+.glow-btn:hover {
+  filter: brightness(1.13);
+  box-shadow: 0 0 28px 13px #45f3ffdf, 0 0 19px 9px #ff2770ee;
+}
+.login-links {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 0.99em;
+}
+.forgot-link {
+  color: #45f3ff;
+  text-shadow: 0 0 4px #45f3ff;
+  text-decoration: none;
+}
+.signup-link {
+  color: #ff2770;
+  text-shadow: 0 0 7px #ff2770, 0 0 4px #fff4;
+  font-weight: 600;
+  text-decoration: none;
+}
+/* Mirror effect for lower box */
+.mirror-effect {
+  opacity: 0.17;
+  transform: scaleY(-1) scaleX(1.01);
+  margin-top: -14px;
+  filter: blur(1.2px) grayscale(0.7) brightness(1.14);
+  pointer-events: none;
+  z-index:1;
+}
+
+@media (max-width: 800px) {
+  .main-login-flex { flex-direction: column; gap: 16px; }
+  .hacker-logo-side { min-width: 98px; max-width: 170px; min-height:92px; }
+  .hacker-logo-img { max-width:70vw;}
+}
+@media (max-width: 600px) {
+  .glow-wrapper { padding: 12px 2vw 24px 2vw; margin-top:32px; }
+  .login-title { font-size: 1.21em; margin-bottom: 19px;}
+}

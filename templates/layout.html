@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Classroom</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Bootstrap CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- FontAwesome CDN for icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <!-- Global specular button styling -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='specular-button.css') }}" />
+  <style>
+    html, body {height: 100%;margin:0;padding:0;}
+    body {
+      background: transparent;
+      min-height: 100vh;
+      color:#fff;
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      overflow-x: hidden;
+      position: relative;
+    }
+    .dot-field-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      background: radial-gradient(circle at 20% 20%, rgba(79, 195, 247, 0.08), transparent 20%),
+                  radial-gradient(circle at 80% 30%, rgba(255, 52, 168, 0.07), transparent 18%),
+                  radial-gradient(circle at 50% 80%, rgba(110, 95, 255, 0.06), transparent 22%),
+                  linear-gradient(180deg, rgba(15, 18, 34, 0.95), rgba(20, 24, 48, 0.95));
+    }
+    .dot-field-bg canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .glass {
+      background: rgba(25, 29, 45, 0.83) !important;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px 0 rgba(31,38,135,.27);
+      border: 1.5px solid rgba(255,255,255,.09);
+      padding: 2.2rem 2.1rem 1.2rem 2.1rem;
+      position: relative;
+      z-index: 5;
+    }
+    .navbar-dark .navbar-nav .nav-link.active {
+      color: #dc3545 !important;
+    }
+    .centered-flex {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="dot-field-bg"><canvas id="dot-field-canvas"></canvas></div>
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm" style="z-index: 10;">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('home') }}">
+        <i class="fa fa-chalkboard-teacher me-2"></i>Smart Classroom
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        {% if session.get('username') %}
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link {% if request.endpoint == 'home' %}active{% endif %}" href="{{ url_for('home') }}">Home</a></li>
+          {% if session.get('role') in ['teacher', 'admin'] %}
+          <li class="nav-item"><a class="nav-link {% if request.endpoint == 'attendance' %}active{% endif %}" href="{{ url_for('attendance') }}">Attendance</a></li>
+          <li class="nav-item"><a class="nav-link {% if request.endpoint == 'attendance_log_view' %}active{% endif %}" href="{{ url_for('attendance_log_view') }}">Attendance Log</a></li>
+          <li class="nav-item"><a class="nav-link {% if request.endpoint == 'bulk_mark' %}active{% endif %}" href="{{ url_for('bulk_mark') }}">Bulk Mark</a></li>
+          <li class="nav-item"><a class="nav-link {% if request.endpoint == 'correction_requests_view' %}active{% endif %}" href="{{ url_for('correction_requests_view') }}">Correction Requests</a></li>
+          {% endif %}
+          {% if session.get('role') == 'student' %}
+          <li class="nav-item"><a class="nav-link {% if request.endpoint == 'student_dashboard' %}active{% endif %}" href="{{ url_for('student_dashboard') }}">My Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link {% if request.endpoint == 'correction_requests_view' %}active{% endif %}" href="{{ url_for('correction_requests_view') }}">Correction Requests</a></li>
+          {% endif %}
+          {% if session.get('role') == 'admin' %}
+          <li class="nav-item"><a class="nav-link {% if request.endpoint == 'admin_users' %}active{% endif %}" href="{{ url_for('admin_users') }}">User Management</a></li>
+          {% endif %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('timetable') }}">Timetable</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('attendance_analytics') }}">Analytics</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout ({{ session.get('username') }})</a></li>
+        </ul>
+        {% else %}
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+        </ul>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-4" style="max-width: 1200px; z-index: 5; position: relative;">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script>
+    const canvas = document.getElementById("dot-field-canvas");
+    const ctx = canvas.getContext("2d");
+
+    const config = {
+      dotRadius: 1.5,
+      dotSpacing: 14,
+      cursorRadius: 500,
+      cursorForce: 0.1,
+      bulgeOnly: true,
+      bulgeStrength: 67,
+      glowRadius: 160,
+      sparkle: false,
+      waveAmplitude: 0,
+      gradientFrom: 'rgba(168, 85, 247, 0.35)',
+      gradientTo: 'rgba(180, 151, 207, 0.25)',
+      glowColor: '#120F17'
+    };
+
+    const mouse = {
+      x: -9999,
+      y: -9999,
+      prevX: -9999,
+      prevY: -9999,
+      speed: 0
+    };
+
+    let width = 0;
+    let height = 0;
+    let cols = 0;
+    let rows = 0;
+    let offsetX = 0;
+    let offsetY = 0;
+    let dots = [];
+    let frame = 0;
+
+    function resize() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      buildDots();
+    }
+
+    function buildDots() {
+      const step = config.dotRadius + config.dotSpacing;
+      cols = Math.max(1, Math.floor(width / step));
+      rows = Math.max(1, Math.floor(height / step));
+      offsetX = (width - cols * step) / 2;
+      offsetY = (height - rows * step) / 2;
+      dots = [];
+
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const ax = offsetX + col * step + step / 2;
+          const ay = offsetY + row * step + step / 2;
+          dots.push({ ax, ay, sx: ax, sy: ay, x: ax, y: ay, vx: 0, vy: 0 });
+        }
+      }
+    }
+
+    function updateMouseSpeed() {
+      const dx = mouse.x - mouse.prevX;
+      const dy = mouse.y - mouse.prevY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      mouse.speed += (dist - mouse.speed) * 0.5;
+      if (mouse.speed < 0.001) mouse.speed = 0;
+      mouse.prevX = mouse.x;
+      mouse.prevY = mouse.y;
+    }
+
+    setInterval(updateMouseSpeed, 20);
+
+    function draw() {
+      frame += 1;
+      ctx.clearRect(0, 0, width, height);
+
+      if (mouse.x >= 0 && mouse.y >= 0) {
+        const glow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, config.glowRadius);
+        glow.addColorStop(0, `rgba(168, 85, 247, 0.22)`);
+        glow.addColorStop(1, 'rgba(168, 85, 247, 0)');
+        ctx.fillStyle = glow;
+        ctx.fillRect(mouse.x - config.glowRadius, mouse.y - config.glowRadius, config.glowRadius * 2, config.glowRadius * 2);
+      }
+
+      const gradient = ctx.createLinearGradient(0, 0, width, height);
+      gradient.addColorStop(0, config.gradientFrom);
+      gradient.addColorStop(1, config.gradientTo);
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+
+      const engagement = Math.min(mouse.speed / 5, 1);
+      const cursorRadiusSq = config.cursorRadius * config.cursorRadius;
+      const rad = config.dotRadius;
+      const wave = config.waveAmplitude;
+
+      for (let i = 0; i < dots.length; i++) {
+        const dot = dots[i];
+        const dx = mouse.x - dot.ax;
+        const dy = mouse.y - dot.ay;
+        const distSq = dx * dx + dy * dy;
+
+        if (distSq < cursorRadiusSq && engagement > 0.01) {
+          const dist = Math.sqrt(distSq);
+          const t = 1 - dist / config.cursorRadius;
+          const push = t * t * config.bulgeStrength * engagement;
+          const angle = Math.atan2(dy, dx);
+          dot.sx += (dot.ax - Math.cos(angle) * push - dot.sx) * 0.15;
+          dot.sy += (dot.ay - Math.sin(angle) * push - dot.sy) * 0.15;
+        } else {
+          dot.sx += (dot.ax - dot.sx) * 0.1;
+          dot.sy += (dot.ay - dot.sy) * 0.1;
+        }
+
+        if (wave > 0) {
+          dot.x = dot.sx + Math.cos(dot.ay * 0.03 + frame * 0.02) * wave * 0.5;
+          dot.y = dot.sy + Math.sin(dot.ax * 0.03 + frame * 0.02) * wave;
+        } else {
+          dot.x = dot.sx;
+          dot.y = dot.sy;
+        }
+
+        if (config.sparkle && ((i * 2654435761) ^ (frame >> 3)) % 100 < 3) {
+          ctx.moveTo(dot.x + rad * 1.8, dot.y);
+          ctx.arc(dot.x, dot.y, rad * 1.8, 0, Math.PI * 2);
+        } else {
+          ctx.moveTo(dot.x + rad, dot.y);
+          ctx.arc(dot.x, dot.y, rad, 0, Math.PI * 2);
+        }
+      }
+
+      ctx.fill();
+      requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('mousemove', (event) => {
+      mouse.x = event.clientX;
+      mouse.y = event.clientY;
+    }, { passive: true });
+
+    window.addEventListener('resize', resize);
+    resize();
+    requestAnimationFrame(draw);
+  </script>
+</body>
+</html>

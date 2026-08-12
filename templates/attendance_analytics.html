@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="glass" style="max-width:950px;margin:2rem auto;padding:2.5rem;">
+  <h2 class="text-center mb-4">Attendance Analytics</h2>
+  <canvas id="dailyBarChart" height="120"></canvas>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+  const ctx = document.getElementById('dailyBarChart').getContext('2d');
+  const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: {{ chart_labels|tojson }},
+      datasets: [
+        {
+          label: 'Present',
+          backgroundColor: '#28a745CC',
+          data: {{ present_counts|tojson }},
+        },
+        {
+          label: 'Absent',
+          backgroundColor: '#dc3545CC',
+          data: {{ absent_counts|tojson }},
+        },
+        {
+          label: 'Late',
+          backgroundColor: '#ffc107CC',
+          data: {{ late_counts|tojson }},
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: {display:true, text:'Present/Absent/Late count by date', font:{size:18}},
+        legend: {display:true}
+      },
+      scales: {
+        x: {stacked:true},
+        y: {beginAtZero:true, stacked:true}
+      }
+    }
+  });
+  </script>
+</div>
+{% endblock %}

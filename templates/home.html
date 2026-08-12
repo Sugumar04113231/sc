@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="centered-flex" style="min-height: 80vh;">
+  <div class="glass" style="width:100%; max-width:760px; padding: 3rem 1.5rem; text-align:center;">
+    <h1>Welcome to Smart Classroom!</h1>
+    <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
+      <a href="{{ url_for('attendance') }}" class="btn btn-primary btn-lg">Mark Attendance</a>
+      <a href="{{ url_for('attendance_log_view') }}" class="btn btn-primary btn-lg">View Attendance Log</a>
+      <a href="{{ url_for('timetable') }}" class="btn btn-primary btn-lg">View Timetable</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
